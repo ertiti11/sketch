@@ -1,17 +1,21 @@
 package main
 
 import (
-	"log"
-	"os/exec"
-	"github.com/fatih/color"
+    "fmt"
+    "log"
+    "path/filepath"
 )
 
+func main() {
 
-func main(){
-	cmd := exec.Command("./lib/main.exe", "-i",  "-o", "war.bin", "-l", "es")
-	err := cmd.Run()
-	if err != nil {
-		color.Red("\narchivo no encontrado")
-		log.Fatal(err)
-		}
+    p, err := filepath.Abs("./main.go")
+
+    if err != nil {
+
+        log.Fatal(err)
+    }
+
+    fmt.Println(p)
+
+
 }

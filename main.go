@@ -3,23 +3,24 @@ package main
 
 import (
 	// "encoding/hex"
+	
 	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
-
+	"path/filepath"
 	"github.com/fatih/color"
 )
 
 func encode(file string) {
 	// cmd := exec.Command("python", "./lib/main.py", "-i", file, "-o", "war.bin", "-l", "es")
-	cmd := exec.Command("./main.exe", "-i", file, "-o", "war.bin", "-l", "es")
+	cmd := exec.Command("./lib/main.exe", "-i", file, "-o", "war.bin", "-l", "es")
 	err := cmd.Run()
 	if err != nil {
-		color.Red("\narchivo no encontrado")
-		log.Fatal(err)
+		color.Red("\nespecified file not found")
+		os.Exit(2)
 	}
 }
 
@@ -107,7 +108,8 @@ func write_data(digiscript string) {
 
 	f, err := os.Create("sketch.ino")
 	if err != nil {
-		log.Fatal(err)
+		color.Red("\nNo se pudo crear el archivo temporal de arduino")
+		
 	}
 
 	defer f.Close()
@@ -122,11 +124,19 @@ func write_data(digiscript string) {
 func main() {
 	arg_len := len(os.Args[1:])
 	if arg_len < 1 {
-		fmt.Printf("usage tu sabes\n")
+		fmt.Printf("digiducky [file] -l [layout] (es, eng, ...)")
 		os.Exit(1)
 	}
 
-	encode(os.Args[1])
+	
+	file, errr := filepath.Abs(os.Args[1])
+	
+    if errr != nil {
+
+        log.Fatal(errr)
+    }
+	
+	encode(file)
 	payload, error := GetFile("war.bin")
 	if error != nil {
 		fmt.Println(error)
@@ -170,10 +180,11 @@ func GetFile(filename string) ([]byte, error) {
 
 func compile() {
 	color.Yellow("compilando...\n")
-	compile := exec.Command("./arduino.exe", "compile", "-b", "digistump:avr:digispark-tiny")
-	comerr := compile.Run()
-	if comerr != nil {
-		log.Fatal(comerr)
+	compile := exec.Command("./lib/arduino.exe", "compile", "-b", "digistump:avr:digispark-tiny")
+	compile_rr := compile.Run()
+	if compile_rr != nil {
+		color.Red("no se pudo compilar el sketch")
+		os.Exit(1)
 	}
 	color.Green("compilado \n")
 	color.Green("Tienes 60 seg para introducir el dispositivo \n")
@@ -183,10 +194,10 @@ func compile() {
 
 	// }()
 
-	upload := exec.Command("./arduino.exe", "upload", "-b", "digistump:avr:digispark-tiny")
-	uperr := upload.Run()
-	if uperr != nil {
-		log.Fatal(uperr)
+	upload := exec.Command("./lib/arduino.exe", "upload", "-b", "digistump:avr:digispark-tiny")
+	upload_err := upload.Run()
+	if upload_err != nil {
+		log.Fatal(upload_err)
 	}
 	color.Green("subido? \n")
 
